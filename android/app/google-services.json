@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "198665367354",
+    "project_id": "fitmaxx-fafcc",
+    "storage_bucket": "fitmaxx-fafcc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198665367354:android:f969204263cce8e7c36a03",
+        "android_client_info": {
+          "package_name": "com.example.fitmaxx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_2MepsKdl9lc8zrtVW2asjf46jTIJdfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

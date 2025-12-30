@@ -1,4 +1,6 @@
+import 'package:fitmaxx/auth/login_or_register.dart';
 import 'package:fitmaxx/pages/login_page.dart';
+import 'package:fitmaxx/pages/register_page.dart';
 import 'package:fitmaxx/theme/dark_mode.dart';
 import 'package:fitmaxx/theme/light_mode.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: const LoginOrRegister(),
       theme: lightMode,
       darkTheme: darkMode,
       
