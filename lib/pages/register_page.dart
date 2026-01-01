@@ -1,13 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/my_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
+import 'package:fitmaxx/helper/helper_functions.dart';
 import 'package:flutter/material.dart';
 
-class RegisterPage extends StatelessWidget {
+
+class RegisterPage extends StatefulWidget {
   
   final void Function()? onTap;
 
-  RegisterPage({super.key, required this.onTap});
+  const RegisterPage({super.key, required this.onTap});
 
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   // text controllers
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -15,9 +24,63 @@ class RegisterPage extends StatelessWidget {
   final TextEditingController confirmPwController = TextEditingController();
 
   // register method
-  void registerUser() {
+  void registerUser() async {
+    // show loading circle
+    showDialog(
+      context: context,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          ),
+        ),
+      );
+    // make sure passwords match
+    if (passwordController.text != confirmPwController.text) {
+      // if (!mounted) return;
+      // pop loading circle
+      Navigator.pop(context);
 
+      // show error message to user
+      displayMessageToUser("Passwords do not match.", context);
+    } 
+
+    // if passwords do match
+    else{
+      // try creating the user
+      try {
+        // create the user
+        UserCredential? userCredential = 
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: emailController.text, 
+            password: passwordController.text
+          );
+
+        // create a user document and add to firestore
+        createUserDocument(userCredential);
+        
+        // pop loading cirlce
+        if (mounted) Navigator.of(context, rootNavigator: true).pop();
+      } 
+      
+      // display error message to user
+      on FirebaseAuthException catch (e) {
+        // pop loading circle
+        Navigator.of(context, rootNavigator: true).pop();
+        displayMessageToUser(e.code, context);
+      }
+    }
   }
+  // create a user document and collect them in firestore
+    Future<void> createUserDocument(UserCredential? userCredential) async{
+      if (userCredential!= null && userCredential.user != null) {
+        await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(userCredential.user!.email)
+        .set({
+          'email': userCredential.user!.email,
+          'username': usernameController.text,
+        });
+      }
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +178,7 @@ class RegisterPage extends StatelessWidget {
                 ),
                 
                 GestureDetector(
-                  onTap: onTap,
+                  onTap: widget.onTap,
                   child: const Text(
                     " Login here",
                     style: TextStyle(
