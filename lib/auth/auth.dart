@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/auth/login_or_register.dart';
-import 'package:fitmaxx/pages/dashboard_page.dart';
+import 'package:fitmaxx/pages/dashboard_screen.dart';
+import 'package:fitmaxx/pages/home_page.dart';
 import 'package:flutter/material.dart';
 
 class AuthPage extends StatelessWidget {
@@ -14,7 +15,7 @@ class AuthPage extends StatelessWidget {
         builder: (context, snapshot) {
           // user is logged in
           if (snapshot.hasData) {
-            return DashboardPage();
+            return DashboardScreen();
           }
           // user is NOT logged in
           else{
