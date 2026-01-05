@@ -74,8 +74,9 @@ class _RegisterPageState extends State<RegisterPage> {
       if (userCredential!= null && userCredential.user != null) {
         await FirebaseFirestore.instance
         .collection("Users")
-        .doc(userCredential.user!.email)
+        .doc(userCredential.user!.uid)
         .set({
+          'uid': userCredential.user!.uid,
           'email': userCredential.user!.email,
           'username': usernameController.text,
         });

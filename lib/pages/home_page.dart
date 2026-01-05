@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:fitmaxx/components/my_roundbutton.dart';
 import 'package:fitmaxx/pages/activities_page.dart';
 import 'package:fitmaxx/pages/activityRecorder_page.dart';
 import 'package:fitmaxx/pages/mealDiary_page.dart';
@@ -26,12 +27,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Dashboard"),
-        actions: [
-          // logout button
-          IconButton(onPressed: logout, icon: Icon(Icons.logout))
-        ],
+        title: Text(
+        'H O M E',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        elevation: 0,
+        centerTitle: true,
       ),
+      
 
       
     );
