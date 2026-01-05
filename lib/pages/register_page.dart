@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/my_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/helper/helper_functions.dart';
+import 'package:fitmaxx/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 
@@ -17,6 +18,8 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _authService = AuthService();
+
   // text controllers
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -35,7 +38,6 @@ class _RegisterPageState extends State<RegisterPage> {
       );
     // make sure passwords match
     if (passwordController.text != confirmPwController.text) {
-      // if (!mounted) return;
       // pop loading circle
       Navigator.pop(context);
 
@@ -49,9 +51,9 @@ class _RegisterPageState extends State<RegisterPage> {
       try {
         // create the user
         UserCredential? userCredential = 
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: emailController.text, 
-            password: passwordController.text
+          await _authService.registerWithEmailPassword(
+            email: emailController.text,
+            password: passwordController.text,
           );
 
         // create a user document and add to firestore
@@ -62,10 +64,10 @@ class _RegisterPageState extends State<RegisterPage> {
       } 
       
       // display error message to user
-      on FirebaseAuthException catch (e) {
+      catch (e) {
         // pop loading circle
         Navigator.of(context, rootNavigator: true).pop();
-        displayMessageToUser(e.code, context);
+        displayMessageToUser(e.toString(), context);
       }
     }
   }

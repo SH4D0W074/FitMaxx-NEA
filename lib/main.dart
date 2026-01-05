@@ -1,5 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:fitmaxx/auth/auth.dart';
+import 'package:fitmaxx/auth/auth_page.dart';
 import 'package:fitmaxx/auth/login_or_register.dart';
 import 'package:fitmaxx/firebase_options.dart';
 import 'package:fitmaxx/pages/login_page.dart';

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/my_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/helper/helper_functions.dart';
+import 'package:fitmaxx/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,6 +16,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // auth service instance
+  final _authService = AuthService();
+
   // text controllers
   final TextEditingController emailController = TextEditingController();
   final  TextEditingController passwordController = TextEditingController();
@@ -31,17 +35,17 @@ class _LoginPageState extends State<LoginPage> {
 
     // try sign in
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
+      await _authService.signInWithEmailPassword(email: emailController.text, password: passwordController.text,);
 
       // pop loading circle
       if (context.mounted) {Navigator.of(context, rootNavigator: true).pop();}
     }
 
     // display any errors
-    on FirebaseAuthException catch (e) {
+    catch (e) {
       // pop loading circle
       Navigator.of(context, rootNavigator: true).pop();
-      displayMessageToUser(e.code, context);
+      displayMessageToUser(e.toString(), context);
     }
   }
 
