@@ -1,37 +1,44 @@
-import 'package:flutter/material.dart';
+import 'package:fitmaxx/models/consumed_food_model.dart';
+import 'package:fitmaxx/models/food_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class UserModel {
-  String? uid;
-  String? email;
-  String? username;
-  double? height;
-  double? weight;
-  int? age;
-  int? targetCalories;
-  double? consumedCalories;
-  double? burnedCalories;
 
-  UserModel({
-    this.uid,
-    this.email, 
-    this.username,
-    this.height,
-    this.weight,
-    this.age,
-    this.targetCalories,
-    this.consumedCalories,
-    this.burnedCalories,
+class CustomUser {
+  // fields
+  String id;
+  String email;
+  String username;
+  String units;
+  double height;
+  double weight;
+  int age;
+  int targetCalories;
+  double consumedCalories;
+  double burnedCalories;
+  List<Food>? foodLog;
+  List<ConsumedFood>? consumedFoodLog = [];
+
+  CustomUser({
+    required this.id,
+    required this.email, 
+    required this.username,
+    required this.units,
+    required this.height,
+    required this.weight,
+    required this.age,
+    required this.targetCalories,
+    required this.consumedCalories,
+    required this.burnedCalories,
     });
 
-  // Create a UserModel object from a Firestore document
-  factory UserModel.fromDocument(DocumentSnapshot doc) {
+  // Create a CustomUser object from a Firestore document
+  factory CustomUser.fromMap(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return UserModel(
-      uid: doc.id,
+    return CustomUser(
+      id: doc.id,
       email: data['email'],
       username: data['username'],
+      units: data['units'],
       height: data['height']?.toDouble(),
       weight: data['weight']?.toDouble(),
       age: data['age'],
@@ -41,11 +48,20 @@ class UserModel {
     );
   }
 
-  // Convert UserModel object to a map for Firestore
+  // Convert CustomUser object to a map for Firestore
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'email': email,
       'username': username,
+      'units': units,
+      'height': height,
+      'weight': weight,
+      'age': age,
+      'targetCalories': targetCalories,
+      'consumedCalories': consumedCalories,
+      'burnedCalories': burnedCalories,
+      'foodLog': foodLog?.map((food) => food.toMap()).toList() ?? [],
     };
   }
 }

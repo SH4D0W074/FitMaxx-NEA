@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/my_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/helper/helper_functions.dart';
+import 'package:fitmaxx/models/user_model.dart';
 import 'package:fitmaxx/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitmaxx/services/user_service.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -55,9 +57,23 @@ class _RegisterPageState extends State<RegisterPage> {
             email: emailController.text,
             password: passwordController.text,
           );
+        // create a new CustomUser object
+        final newUser = CustomUser(
+          id: userCredential.user!.uid,
+          email: userCredential.user!.email!,
+          username: usernameController.text,
+          units: 'metric',
+          height: 0.0,
+          weight: 0.0,
+          age: 0,
+          targetCalories: 2000,
+          consumedCalories: 0.0,
+          burnedCalories: 0.0,
+        );
 
+        final userService = UserService();
         // create a user document and add to firestore
-        createUserDocument(userCredential);
+        userService.createUserDocument(userCredential, newUser );
         
         // pop loading cirlce
         if (mounted) Navigator.of(context, rootNavigator: true).pop();
@@ -71,19 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
       }
     }
   }
-  // create a user document and collect them in firestore
-    Future<void> createUserDocument(UserCredential? userCredential) async{
-      if (userCredential!= null && userCredential.user != null) {
-        await FirebaseFirestore.instance
-        .collection("Users")
-        .doc(userCredential.user!.uid)
-        .set({
-          'uid': userCredential.user!.uid,
-          'email': userCredential.user!.email,
-          'username': usernameController.text,
-        });
-      }
-    }
+
 
   @override
   Widget build(BuildContext context) {
