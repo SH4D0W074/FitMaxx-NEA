@@ -7,6 +7,7 @@ import 'package:fitmaxx/models/user_model.dart';
 import 'package:fitmaxx/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitmaxx/services/user_service.dart';
+import 'package:flutter/services.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -27,6 +28,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPwController = TextEditingController();
+  final TextEditingController heightController = TextEditingController();
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
 
   // register method
   void registerUser() async {
@@ -63,14 +67,14 @@ class _RegisterPageState extends State<RegisterPage> {
           email: userCredential.user!.email!,
           username: usernameController.text,
           units: 'metric',
-          height: 0.0,
-          weight: 0.0,
-          age: 0,
+          height: heightController.text.isNotEmpty ? double.parse(heightController.text) : 0.0,
+          weight: weightController.text.isNotEmpty ? double.parse(weightController.text) : 0.0,
+          age: ageController.text.isNotEmpty ? int.parse(ageController.text) : 0,
           targetCalories: 2000,
           consumedCalories: 0.0,
           burnedCalories: 0.0,
         );
-
+        // get user service instance
         final userService = UserService();
         // create a user document and add to firestore
         userService.createUserDocument(userCredential, newUser );
@@ -149,6 +153,51 @@ class _RegisterPageState extends State<RegisterPage> {
               hintText: 'Confirm Password', 
               obscureText: true, 
               controller: confirmPwController,
+            ),
+
+            SizedBox(height: 10),
+
+            // height textfield
+            MyTextfield(
+              hintText: 'Height (cm)', 
+              obscureText: false, 
+              controller: heightController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*\.?\d*$'),
+                ),
+              ]
+            ),
+
+            SizedBox(height: 10),
+
+            // weight textfield
+            MyTextfield(
+              hintText: 'Weight (kg)', 
+              obscureText: false, 
+              controller: weightController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*\.?\d*$'),
+                ),
+              ]
+            ),
+
+            SizedBox(height: 10),
+
+            // age textfield
+            MyTextfield(
+              hintText: 'Age', 
+              obscureText: false, 
+              controller: ageController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*\.?\d*$'),
+                ),
+              ]
             ),
 
             SizedBox(height: 10),
