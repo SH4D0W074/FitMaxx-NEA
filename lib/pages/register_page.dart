@@ -69,9 +69,9 @@ class _RegisterPageState extends State<RegisterPage> {
           units: 'metric',
           height: heightController.text.isNotEmpty ? double.parse(heightController.text) : 0.0,
           weight: weightController.text.isNotEmpty ? double.parse(weightController.text) : 0.0,
-          age: ageController.text.isNotEmpty ? int.parse(ageController.text) : 0,
+          age: ageController.text.isNotEmpty ?  double.parse(ageController.text).toInt() : 0,
           targetCalories: 2000,
-          consumedCalories: 0.0,
+          
           burnedCalories: 0.0,
         );
         // get user service instance

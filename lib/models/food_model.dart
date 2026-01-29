@@ -23,11 +23,11 @@ class Food {
     return Food(
       id: documentId,
       foodName: data['foodName'],
-      calories: data['calories'],
+      calories: data['calories'] ?? 0,
       foodWeight: data['foodWeight']?.toDouble() ?? 0.0,
-      protein: data['protein']?.toDouble(),
-      carbs: data['carbs']?.toDouble(),
-      fats: data['fats']?.toDouble(),
+      protein: data['protein']?.toDouble() ?? 0.0,
+      carbs: data['carbs']?.toDouble() ?? 0.0,
+      fats: data['fats']?.toDouble() ?? 0.0,
     );
   }
 

@@ -1,4 +1,5 @@
 class ConsumedFood {
+  final String id;
   final String foodName;
   final int calories;
   final double protein;
@@ -9,6 +10,7 @@ class ConsumedFood {
   final DateTime timestamp; 
 
   ConsumedFood({
+    required this.id,
     required this.foodName,
     required this.calories,
     required this.protein,
@@ -33,9 +35,10 @@ class ConsumedFood {
     };
   }
 
-  // Create ConsumedFood object from Firestore map
-  factory ConsumedFood.fromMap(Map<String, dynamic> map) {
+  // Create ConsumedFood object from Firestore document
+  factory ConsumedFood.fromDoc(String id, Map<String, dynamic> map) {
     return ConsumedFood(
+      id: id,
       foodName: map['foodName'] ?? 'Unknown Food',
       calories: map['calories'] ?? 0,
       protein: (map['protein'] ?? 0).toDouble(),
@@ -43,7 +46,7 @@ class ConsumedFood {
       foodWeight: (map['foodWeight'] ?? 0).toDouble(),
       mealType: map['mealType'] ?? 'Unknown Meal',
       timestamp: DateTime.tryParse(map['timestamp'] ?? '') ?? DateTime.now(),
-      carbs: map['carbs']
+      carbs: (map['carbs'] ?? 0).toDouble()
     );
   }
 
@@ -52,6 +55,7 @@ class ConsumedFood {
 
   // Create a copy with updated fields
   ConsumedFood copyWith({
+    String? id,
     String? foodName,
     int? calories,
     double? protein,
@@ -62,6 +66,7 @@ class ConsumedFood {
     DateTime? timestamp,
   }) {
     return ConsumedFood(
+      id: id ?? this.id,
       foodName: foodName ?? this.foodName,
       calories: calories ?? this.calories,
       protein: protein ?? this.protein,
