@@ -1,5 +1,5 @@
 import 'package:fitmaxx/pages/activities_page.dart';
-import 'package:fitmaxx/pages/activityRecorder_page.dart';
+import 'package:fitmaxx/pages/workoutHub_page.dart';
 import 'package:fitmaxx/pages/home_page.dart';
 import 'package:fitmaxx/pages/mealDiary_page.dart';
 import 'package:fitmaxx/pages/settings_page.dart';
@@ -22,7 +22,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Widget> _pages = const [
     HomePage(),
     MealdiaryPage(),
-    ActivityrecorderPage(),
+    WorkouthubPage(),
     ActivitiesPage(),
     SettingsPage(),
   ];
@@ -41,15 +41,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // bottom navigation bar
       bottomNavigationBar: Container(
-        color: Colors.black,
+        color: Theme.of(  context).colorScheme.primary,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20.0),
           child: GNav(
             gap: 6,
-            backgroundColor: Colors.black,
-            color: Colors.white,
-            activeColor: Colors.white,
-            tabBackgroundColor: Colors.grey.shade800,
+            backgroundColor: Theme.of(  context).colorScheme.primary,
+            color: Theme.of(  context).colorScheme.inversePrimary,
+            activeColor: Theme.of(  context).colorScheme.inversePrimary,
+            tabBackgroundColor: Theme.of(  context).colorScheme.surface,
             padding: const EdgeInsets.all(16),
             
             selectedIndex: _selectedIndex,

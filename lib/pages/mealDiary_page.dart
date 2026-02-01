@@ -29,6 +29,12 @@ class _MealdiaryPageState extends State<MealdiaryPage> {
 
   int _refreshKey = 0;
 
+  bool _isSameDay(DateTime a, DateTime b) {
+  return a.year == b.year &&
+         a.month == b.month &&
+         a.day == b.day;
+  }
+
 @override
 void dispose() {
   _nameController.dispose();
@@ -270,8 +276,9 @@ Widget _buildFoodForm() {
         }
 
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: UserService().watchConsumedFoods(user.id), // assumes you added this
+          stream: UserService().watchConsumedFoods(user.id), // listen to changes
           builder: (context, foodSnap) {
+            // Handle loading and error states
             if (foodSnap.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -279,21 +286,28 @@ Widget _buildFoodForm() {
               return Center(child: Text('Error: ${foodSnap.error}'));
             }
 
+            // Process fetched foods
             final docs = foodSnap.data?.docs ?? [];
             final foods = docs.map((d) => ConsumedFood.fromDoc(d.id, d.data())).toList();
 
-            if (foods.isEmpty) {
+            // Filter foods for today only
+            final now = DateTime.now();
+            final foodsToday = foods.where((f) => _isSameDay(f.timestamp, now)).toList();
+
+
+            // Handle empty state
+            if (foodsToday.isEmpty) {
               return const Center(child: Text('No foods logged yet.'));
             }
 
             // Group foods by meal type
             final Map<String, List<ConsumedFood>> grouped = {};
-            for (final food in foods) {
+            for (final food in foodsToday) {
               grouped.putIfAbsent(food.mealType, () => []).add(food);
             }
 
             // Totals for progress bar
-            final int consumedCalories = foods.fold<int>(0, (sum, f) => sum + f.calories);
+            final int consumedCalories = foodsToday.fold<int>(0, (sum, f) => sum + f.calories);
 
             final int target = user.targetCalories;
             final double progress =
@@ -317,6 +331,7 @@ Widget _buildFoodForm() {
             return SingleChildScrollView(
               child: Column(
                 children: [
+                  // Progress Bar Card
                   Card(
                     margin: const EdgeInsets.all(16),
                     elevation: 4,
@@ -347,7 +362,8 @@ Widget _buildFoodForm() {
                       ),
                     ),
                   ),
-
+                  
+                  // Meal Sections
                   ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -357,6 +373,7 @@ Widget _buildFoodForm() {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Meal Type Header
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
@@ -374,7 +391,7 @@ Widget _buildFoodForm() {
                               ],
                             ),
                           ),
-
+                          // Foods List
                           if (mealFoods.isEmpty)
                             Padding(
                               padding: const EdgeInsets.all(16),
