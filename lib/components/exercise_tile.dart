@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class ExerciseTile extends StatelessWidget {
   final String exerciseName;
   final String weight;
-  final int reps;
-  final int sets;
+  final String reps;
+  final String sets;
   final bool isCompleted;
   final void Function(bool?)? onCheckBoxChanged;
 

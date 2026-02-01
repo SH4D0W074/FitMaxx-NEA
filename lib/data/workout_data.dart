@@ -15,12 +15,13 @@ class WorkoutData extends ChangeNotifier{
   List<Workout> workoutList = [
     // default workout
     Workout(
+      id: "default_workout_1",
       name: "Upper Body", 
       exercises: [
         Exercise(
           name: "Bicep Curls", 
-          sets: 3, 
-          reps: 12, 
+          sets: "3", 
+          reps: "12", 
           weight: "15"
           ),
         ]
@@ -39,24 +40,24 @@ class WorkoutData extends ChangeNotifier{
   }
 
   // add a workout
-  void addWorkout(String workoutName) {
+  void addWorkout(String workoutID, String workoutName,) {
     // create a new workout with empty exercise list
     workoutList.add(
-      Workout(name: workoutName, exercises: [])
+      Workout(id: workoutID, name: workoutName, exercises: [])
     );
 
     notifyListeners();
   }
 
   // add an exercise to a workout
-  void addExercise(String workoutName, Exercise exercise, String weight, String reps, String sets)  {
+  void addExercise(String workoutName, String exerciseName, String weight, String reps, String sets)  {
     // find the relevant workout
     Workout relevantWorkout = getRelevantWorkout(workoutName);
     relevantWorkout.exercises.add(
       Exercise(
-        name: exercise.name, 
-        sets: int.parse(sets), 
-        reps: int.parse(reps), 
+        name: exerciseName, 
+        sets: sets, 
+        reps: reps, 
         weight: weight
         )
       );

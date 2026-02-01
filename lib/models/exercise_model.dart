@@ -1,7 +1,7 @@
 class Exercise {
   final String name;
-  final int sets;
-  final int reps;
+  final String sets;
+  final String reps;
   final String weight;
   bool isCompleted;
 
@@ -11,6 +11,18 @@ class Exercise {
     required this.reps,
     required this.weight,
     this.isCompleted = false,
-    
+
   });
+
+
+  // Convert Exercise object to Firestore map
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'sets': sets,
+      'reps': reps,
+      'weight': weight,
+      'isCompleted': isCompleted,
+    };
+  }
 }

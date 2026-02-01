@@ -1,6 +1,13 @@
 
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
+import 'package:fitmaxx/models/user_model.dart';
+import 'package:fitmaxx/models/workout_model.dart';
 import 'package:fitmaxx/pages/individualWorkout_page.dart';
+import 'package:fitmaxx/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,15 +29,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Create new workout"),
-        content: TextField(
-          controller: newWorkoutNameController,
-          decoration: InputDecoration(
-            hintText: "Enter workout name",
-            hintStyle: TextStyle(
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
-        ),
+        content: MyTextfield(hintText: "Emter workout name", obscureText: false, controller: newWorkoutNameController),
         actions: [
           // cancel button
           MaterialButton(
@@ -53,11 +52,34 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
   }
 
   // save workout
-  void saveWorkout() {
-    // get new workout name from text controller
-    String newWorkoutName = newWorkoutNameController.text;
+  void saveWorkout() async {
+
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+
+    if (user == null) return;
+      // get new workout name from text controller
+      String newWorkoutName = newWorkoutNameController.text;
+
+    // Create a new document reference in the subcollection
+    final workoutDocRef = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(user.id)
+        .collection('workoutLog')
+        .doc(); // auto-generated ID
+
+    // Build ConsumedFood with the Firestore document ID
+    final Workout newWorkout = Workout(
+      id: workoutDocRef.id,
+      name: newWorkoutName,
+      exercises: [],
+    );
+
+    // Save to Firestore subcollection
+    await workoutDocRef.set(newWorkout.toMap());
+
     // add workout to workout data list
-    Provider.of<WorkoutData>(context, listen: false).addWorkout(newWorkoutName);
+    Provider.of<WorkoutData>(context, listen: false).addWorkout(workoutDocRef.id, newWorkoutName);
     // pop dialog
     Navigator.pop(context);
     clearControllers();
@@ -95,7 +117,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
           onPressed: createNewWorkout,
           child: const Icon(Icons.add, ),
         ),
-        
+
         body: Center(
           child: ListView.builder(
             itemCount: value.getWorkoutList().length,
