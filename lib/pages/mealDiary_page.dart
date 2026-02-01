@@ -193,8 +193,16 @@ Widget _buildFoodForm() {
                     child: OutlinedButton(
                       onPressed: () {
                         setState(() => _showForm = false);
+                        _nameController.clear();
+                        _calController.clear();
+                        _proteinController.clear();
+                        _carbsController.clear();
+                        _fatController.clear();
+                        _weightController.clear();
+                        _selectedMealType = 'Breakfast';
                       },
                       child: const Text("Cancel"),
+                      
                     ),
                   ),
                   const SizedBox(width: 10),

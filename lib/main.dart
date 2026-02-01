@@ -1,12 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fitmaxx/auth/auth_page.dart';
-import 'package:fitmaxx/auth/login_or_register.dart';
+import 'package:fitmaxx/data/workout_data.dart';
 import 'package:fitmaxx/firebase_options.dart';
-import 'package:fitmaxx/pages/login_page.dart';
-import 'package:fitmaxx/pages/register_page.dart';
 import 'package:fitmaxx/theme/dark_mode.dart';
 import 'package:fitmaxx/theme/light_mode.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,12 +18,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const AuthPage(),
-      theme: lightMode,
-      darkTheme: darkMode,
-      
+    return MultiProvider(
+      providers: [
+        // add providers 
+        ChangeNotifierProvider(create: (context) => WorkoutData()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: const AuthPage(),
+        theme: lightMode,
+        darkTheme: darkMode,
+        
+      ),
     );
   }
 }
