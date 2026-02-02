@@ -1,5 +1,6 @@
 import 'package:fitmaxx/models/exercise_model.dart';
 import 'package:fitmaxx/models/workout_model.dart';
+import 'package:fitmaxx/services/workout_service.dart';
 import 'package:flutter/material.dart';
 
 class WorkoutData extends ChangeNotifier{
@@ -11,6 +12,7 @@ class WorkoutData extends ChangeNotifier{
     - Each workout contains a name and a list of exercises
 
   */
+  final WorkoutService workoutService = WorkoutService();
 
   List<Workout> workoutList = [
     // default workout
@@ -25,6 +27,7 @@ class WorkoutData extends ChangeNotifier{
           weight: "15"
           ),
         ]
+        ,timestamp: DateTime.now()
       ),
     ];
 
@@ -43,7 +46,7 @@ class WorkoutData extends ChangeNotifier{
   void addWorkout(String workoutID, String workoutName,) {
     // create a new workout with empty exercise list
     workoutList.add(
-      Workout(id: workoutID, name: workoutName, exercises: [])
+      Workout(id: workoutID, name: workoutName, exercises: [], timestamp: DateTime.now(),)
     );
 
     notifyListeners();

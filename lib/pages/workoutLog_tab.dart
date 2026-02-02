@@ -2,12 +2,15 @@
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
 import 'package:fitmaxx/models/user_model.dart';
 import 'package:fitmaxx/models/workout_model.dart';
 import 'package:fitmaxx/pages/individualWorkout_page.dart';
 import 'package:fitmaxx/services/user_service.dart';
+import 'package:fitmaxx/services/workout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +32,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Create new workout"),
-        content: MyTextfield(hintText: "Emter workout name", obscureText: false, controller: newWorkoutNameController),
+        content: MyTextfield(hintText: "Enter workout name", obscureText: false, controller: newWorkoutNameController),
         actions: [
           // cancel button
           MaterialButton(
@@ -56,27 +59,25 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
 
     final userService = UserService();
     final CustomUser? user = await userService.getCurrentUser();
+    final WorkoutService workoutService = WorkoutService();
 
     if (user == null) return;
       // get new workout name from text controller
       String newWorkoutName = newWorkoutNameController.text;
 
     // Create a new document reference in the subcollection
-    final workoutDocRef = FirebaseFirestore.instance
-        .collection('Users')
-        .doc(user.id)
-        .collection('workoutLog')
-        .doc(); // auto-generated ID
+    final workoutDocRef = workoutService.workoutLogRef(user.id).doc();
 
     // Build ConsumedFood with the Firestore document ID
     final Workout newWorkout = Workout(
       id: workoutDocRef.id,
       name: newWorkoutName,
       exercises: [],
+      timestamp: DateTime.now(),
     );
 
     // Save to Firestore subcollection
-    await workoutDocRef.set(newWorkout.toMap());
+    await workoutService.addWorkout(user.id, newWorkout);
 
     // add workout to workout data list
     Provider.of<WorkoutData>(context, listen: false).addWorkout(workoutDocRef.id, newWorkoutName);
@@ -119,23 +120,50 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
         ),
 
         body: Center(
-          child: ListView.builder(
-            itemCount: value.getWorkoutList().length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: Card(
-                  elevation: 1,
-                  child: ListTile(
-                    title: Text(value.getWorkoutList()[index].name,),
-                    trailing: IconButton(
-                      icon: Icon(Icons.edit), 
-                      onPressed: () => goToWorkoutPage(value.getWorkoutList()[index].name),
+          child: StreamBuilder(
+            stream: WorkoutService().getWorkoutStream(FirebaseAuth.instance.currentUser!.uid),
+            builder: (context, snapshot) {
+
+              // if we have data, get all docs
+              if (snapshot.hasData) {
+              List workoutList = snapshot.data!.docs;
+
+
+
+              return ListView.builder(
+                itemCount: workoutList.length,
+                itemBuilder: (context, index) {
+
+                  DocumentSnapshot document = workoutList[index];
+                  // get individual doc
+                  String docID = document.id;
+                  // get workout from each doc
+                  Map<String, dynamic> data = 
+                    document.data() as Map<String, dynamic>;
+                  String workoutName = data['name'];
+
+                  return Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Card(
+                      elevation: 1,
+                      child: ListTile(
+                        title: Text(workoutName),
+                        trailing: IconButton(
+                          icon: Icon(Icons.edit), 
+                          onPressed: () => goToWorkoutPage(workoutName),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               );
-            },
+            }
+
+            // if there is no data return nothing
+          else {
+            return const Text('No workout..');
+          }
+            }
           ),
         ),
       )
