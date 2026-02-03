@@ -56,4 +56,5 @@ class WorkoutService {
     return workouts.doc(docID).delete();
   }
 
+
 }

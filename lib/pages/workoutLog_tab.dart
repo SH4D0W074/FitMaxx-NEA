@@ -50,8 +50,8 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
   }
 
   // go to workout page
-  void goToWorkoutPage(String workoutName) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutPage(workoutName: workoutName,)));
+  void goToWorkoutPage(String workoutName, String workoutID) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => WorkoutPage(workoutName: workoutName, workoutID: workoutID,),),);
   }
 
   // save workout
@@ -68,7 +68,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
     // Create a new document reference in the subcollection
     final workoutDocRef = workoutService.workoutLogRef(user.id).doc();
 
-    // Build ConsumedFood with the Firestore document ID
+    // Build workout with the Firestore document ID
     final Workout newWorkout = Workout(
       id: workoutDocRef.id,
       name: newWorkoutName,
@@ -150,7 +150,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
                         title: Text(workoutName),
                         trailing: IconButton(
                           icon: Icon(Icons.edit), 
-                          onPressed: () => goToWorkoutPage(workoutName),
+                          onPressed: () => goToWorkoutPage(workoutName, docID),
                         ),
                       ),
                     ),

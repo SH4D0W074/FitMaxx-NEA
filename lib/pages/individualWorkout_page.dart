@@ -1,12 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/exercise_tile.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
+import 'package:fitmaxx/models/exercise_model.dart';
+import 'package:fitmaxx/models/user_model.dart';
+import 'package:fitmaxx/models/workout_model.dart';
+import 'package:fitmaxx/services/exercise_service.dart';
+import 'package:fitmaxx/services/user_service.dart';
+import 'package:fitmaxx/services/workout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class WorkoutPage extends StatefulWidget {
   final String workoutName;
-  const WorkoutPage({super.key, required this.workoutName});
+  final String workoutID;
+  const WorkoutPage({super.key, required this.workoutName, required this.workoutID});
 
   @override
   State<WorkoutPage> createState() => _WorkoutPageState();
@@ -20,19 +29,60 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final exerciseRepsController = TextEditingController();
   final exerciseSetsController = TextEditingController();
 
-
+  
+  
   // checkbox was tapped
-  void onCheckBoxChanged(String workoutName, String exerciseName){
+  void onCheckBoxChanged(String workoutName, String exerciseName) async {
+
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+    final Workout workout = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(workoutName);
+    final Exercise exercise = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(workoutName).exercises.firstWhere((ex) => ex.name == exerciseName);
+    final ExerciseService exerciseService = ExerciseService();
+
+    if (user == null) return;
+    // Update exercise completion status in Firestore
+    await exerciseService.toggleExerciseCompleted(
+      user.id, 
+      widget.workoutID, 
+      exercise.id,
+      exercise.isCompleted
+    );
     Provider.of<WorkoutData>(context, listen: false).checkOffExercise(workoutName, exerciseName);
+
   }
 
     // save exercise
-  void saveExercise() {
-    // get exercise name from text controller
+  void saveExercise() async {
+    // get exercise name and fields from text controller
     String newExerciseName = exerciseNameController.text;
     String reps = (exerciseRepsController.text);
     String sets = (exerciseSetsController.text);
     String weight = exerciseWeightController.text;
+    
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+    final Workout workout = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(widget.workoutName);
+    final ExerciseService exerciseService = ExerciseService();
+
+    if (user == null) return;
+
+    // Create a new document reference in the subcollection
+    final exerciseDocRef = exerciseService.exerciseLogRef(user.id, widget.workoutID).doc();
+
+    // Build exercise with the Firestore document ID
+    final Exercise newExercise = Exercise(
+      id: exerciseDocRef.id,
+      name: newExerciseName,
+      sets: sets,
+      reps: reps,
+      weight: weight,
+      timestamp: DateTime.now(),
+    );
+
+    // Save to Firestore subcollection
+    await exerciseService.addExercise(user.id, widget.workoutID, newExercise);
+    
     // add exercise to workout 
     Provider.of<WorkoutData>(context, listen: false).addExercise(
       widget.workoutName, 
@@ -112,16 +162,49 @@ class _WorkoutPageState extends State<WorkoutPage> {
             child: Icon(Icons.add),
             onPressed: createNewExercise,
           ),
-          body: ListView.builder(
-            itemCount: workoutData.numberOfExercisesInWorkout(widget.workoutName),
-            itemBuilder: (context, index) => ExerciseTile(
-              exerciseName: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name, 
-              weight: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].weight, 
-              reps: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].reps, 
-              sets: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].sets, 
-              isCompleted: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].isCompleted,
-              onCheckBoxChanged: (val) => onCheckBoxChanged(widget.workoutName, workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name),
-            ),
+          body: StreamBuilder(
+            stream: ExerciseService().getExercisesStream(
+              FirebaseAuth.instance.currentUser!.uid, 
+              widget.workoutID
+              ),
+            builder: (context, snapshot) {
+
+              // if we have data, get all docs
+              if (snapshot.hasData) {
+              List exerciseList = snapshot.data!.docs;
+
+
+              return ListView.builder(
+                itemCount: exerciseList.length,
+                itemBuilder: (context, index) {
+
+                  DocumentSnapshot document = exerciseList[index];
+                  // get individual doc
+                  String docID = document.id;
+                  // get exercise from each doc
+                  Map<String, dynamic> data = 
+                    document.data() as Map<String, dynamic>;
+                  String exerciseName = data['name'];
+                  String weight = data['weight'];
+                  String reps = data['reps'];
+                  String sets = data['sets'];
+                  bool isCompleted = data['isCompleted'];
+
+                  return ExerciseTile(
+                  exerciseName: exerciseName, 
+                  weight: weight, 
+                  reps: reps, 
+                  sets: sets, 
+                  isCompleted: isCompleted,
+                  onCheckBoxChanged: (val) => onCheckBoxChanged(widget.workoutName, workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name),
+                );
+                },
+              );
+            }
+              else {
+              return const Text('No exercises..');
+              }
+            }
           )
         );
       },

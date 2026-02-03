@@ -16,19 +16,19 @@ class WorkoutData extends ChangeNotifier{
 
   List<Workout> workoutList = [
     // default workout
-    Workout(
-      id: "default_workout_1",
-      name: "Upper Body", 
-      exercises: [
-        Exercise(
-          name: "Bicep Curls", 
-          sets: "3", 
-          reps: "12", 
-          weight: "15"
-          ),
-        ]
-        ,timestamp: DateTime.now()
-      ),
+    // Workout(
+    //   id: "default_workout_1",
+    //   name: "Upper Body", 
+    //   exercises: [
+    //     Exercise(
+    //       name: "Bicep Curls", 
+    //       sets: "3", 
+    //       reps: "12", 
+    //       weight: "15"
+    //       ),
+    //     ]
+    //     ,timestamp: DateTime.now()
+    //   ),
     ];
 
   // get the list of workouts
@@ -58,6 +58,7 @@ class WorkoutData extends ChangeNotifier{
     Workout relevantWorkout = getRelevantWorkout(workoutName);
     relevantWorkout.exercises.add(
       Exercise(
+        id: '1', // Placeholder ID; should be replaced with actual ID logic
         name: exerciseName, 
         sets: sets, 
         reps: reps, 
