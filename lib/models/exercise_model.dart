@@ -31,5 +31,6 @@ class Exercise {
       'timestamp': timestamp?.toIso8601String() ?? DateTime.now().toIso8601String(),
       'isCompleted': isCompleted,
     };
+    
   }
 }

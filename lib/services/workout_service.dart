@@ -9,6 +9,7 @@ class WorkoutService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
   CollectionReference<Map<String, dynamic>> workoutLogRef(String userId) {
     return FirebaseFirestore.instance
         .collection('Users')
@@ -56,5 +57,21 @@ class WorkoutService {
     return workouts.doc(docID).delete();
   }
 
+  // day key for easier querying by day
+  String dayKey(DateTime dateTime) {
+    final d = dateTime.toLocal();
+    return '${d.year}'
+          '${d.month.toString().padLeft(2, '0')}'
+          '${d.day.toString().padLeft(2, '0')}';
+  }
 
+  // create DateTime object from dayKey string
+  DateTime createDateTimeObject(String yyyymmdd) {
+    int yyyy = int.parse(yyyymmdd.substring(0, 4));
+    int mm = int.parse(yyyymmdd.substring(4, 6));
+    int dd = int.parse(yyyymmdd.substring(6, 8));
+
+    DateTime dateTimeObject = DateTime(yyyy, mm, dd);
+    return dateTimeObject;
+  }
 }

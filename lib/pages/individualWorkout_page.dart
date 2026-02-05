@@ -28,29 +28,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final exerciseWeightController = TextEditingController();
   final exerciseRepsController = TextEditingController();
   final exerciseSetsController = TextEditingController();
-
   
-  
-  // checkbox was tapped
-  void onCheckBoxChanged(String workoutName, String exerciseName) async {
-
-    final userService = UserService();
-    final CustomUser? user = await userService.getCurrentUser();
-    final Workout workout = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(workoutName);
-    final Exercise exercise = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(workoutName).exercises.firstWhere((ex) => ex.name == exerciseName);
-    final ExerciseService exerciseService = ExerciseService();
-
-    if (user == null) return;
-    // Update exercise completion status in Firestore
-    await exerciseService.toggleExerciseCompleted(
-      user.id, 
-      widget.workoutID, 
-      exercise.id,
-      exercise.isCompleted
-    );
-    Provider.of<WorkoutData>(context, listen: false).checkOffExercise(workoutName, exerciseName);
-
-  }
 
     // save exercise
   void saveExercise() async {
@@ -62,7 +40,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
     
     final userService = UserService();
     final CustomUser? user = await userService.getCurrentUser();
-    final Workout workout = Provider.of<WorkoutData>(context, listen: false).getRelevantWorkout(widget.workoutName);
     final ExerciseService exerciseService = ExerciseService();
 
     if (user == null) return;
@@ -83,14 +60,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
     // Save to Firestore subcollection
     await exerciseService.addExercise(user.id, widget.workoutID, newExercise);
     
-    // add exercise to workout 
-    Provider.of<WorkoutData>(context, listen: false).addExercise(
-      widget.workoutName, 
-      newExerciseName, 
-      weight, 
-      reps, 
-      sets
-    );
     // pop dialog
     Navigator.pop(context);
     clearControllers();
@@ -196,7 +165,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   reps: reps, 
                   sets: sets, 
                   isCompleted: isCompleted,
-                  onCheckBoxChanged: (val) => onCheckBoxChanged(widget.workoutName, workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name),
+                  onCheckBoxChanged: (val) => ExerciseService().toggleExerciseCompleted(
+                    FirebaseAuth.instance.currentUser!.uid, 
+                    widget.workoutID, 
+                    docID,
+                    isCompleted
+                    ),
                 );
                 },
               );

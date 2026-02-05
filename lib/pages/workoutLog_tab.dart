@@ -72,15 +72,13 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
     final Workout newWorkout = Workout(
       id: workoutDocRef.id,
       name: newWorkoutName,
-      exercises: [],
       timestamp: DateTime.now(),
+      date: workoutService.createDateTimeObject(workoutService.dayKey(DateTime.now())),
     );
 
     // Save to Firestore subcollection
     await workoutService.addWorkout(user.id, newWorkout);
 
-    // add workout to workout data list
-    Provider.of<WorkoutData>(context, listen: false).addWorkout(workoutDocRef.id, newWorkoutName);
     // pop dialog
     Navigator.pop(context);
     clearControllers();
@@ -161,7 +159,7 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
 
             // if there is no data return nothing
           else {
-            return const Text('No workout..');
+            return const Text('');
           }
             }
           ),

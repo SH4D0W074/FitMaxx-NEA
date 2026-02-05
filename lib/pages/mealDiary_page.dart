@@ -287,9 +287,9 @@ Widget _buildFoodForm() {
           stream: UserService().watchConsumedFoods(user.id), // listen to changes
           builder: (context, foodSnap) {
             // Handle loading and error states
-            if (foodSnap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+            // if (foodSnap.connectionState == ConnectionState.waiting) {
+            //   return const Center(child: CircularProgressIndicator());
+            // }
             if (foodSnap.hasError) {
               return Center(child: Text('Error: ${foodSnap.error}'));
             }
