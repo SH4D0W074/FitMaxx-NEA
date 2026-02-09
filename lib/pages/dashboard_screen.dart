@@ -1,4 +1,5 @@
 import 'package:fitmaxx/pages/activities_page.dart';
+import 'package:fitmaxx/pages/progress_page.dart';
 import 'package:fitmaxx/pages/workoutHub_page.dart';
 import 'package:fitmaxx/pages/home_page.dart';
 import 'package:fitmaxx/pages/mealDiary_page.dart';
@@ -23,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     HomePage(),
     MealdiaryPage(),
     WorkouthubPage(),
-    ActivitiesPage(),
+    ProgressPage(),
     SettingsPage(),
   ];
 

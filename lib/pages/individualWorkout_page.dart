@@ -7,6 +7,7 @@ import 'package:fitmaxx/models/exercise_model.dart';
 import 'package:fitmaxx/models/user_model.dart';
 import 'package:fitmaxx/models/workout_model.dart';
 import 'package:fitmaxx/services/exercise_service.dart';
+import 'package:fitmaxx/services/heatmap_service.dart';
 import 'package:fitmaxx/services/user_service.dart';
 import 'package:fitmaxx/services/workout_service.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,36 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final exerciseWeightController = TextEditingController();
   final exerciseRepsController = TextEditingController();
   final exerciseSetsController = TextEditingController();
-  
+
+
+  // check if exercise is completed and update heatmap
+  void toggleExerciseCompleted(String exerciseID, String exerciseName, bool currentStatus) async {
+    final userService = UserService();
+    final ExerciseService exerciseService = ExerciseService();
+    final HeatmapService heatmapService = HeatmapService();
+    final CustomUser? user = await userService.getCurrentUser();
+    if (user == null) return;
+
+    if (currentStatus==true) {
+      heatmapService.unmarkExerciseComplete(
+        uid: user.id, 
+        dateKey: DateTime.now().toIso8601String().substring(0, 10), 
+        exerciseId: exerciseID, 
+      );
+      exerciseService.toggleExerciseCompleted(user.id, widget.workoutID, exerciseID, currentStatus);
+    }
+    else{
+      heatmapService.markExerciseComplete(
+        uid: user.id, 
+        dateKey: DateTime.now().toIso8601String().substring(0, 10), 
+        workoutId: widget.workoutID, 
+        exerciseId: exerciseID, 
+        exerciseName: exerciseName,
+      );
+      exerciseService.toggleExerciseCompleted(user.id, widget.workoutID, exerciseID, currentStatus);
+    }
+
+  }
 
     // save exercise
   void saveExercise() async {
@@ -165,12 +195,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   reps: reps, 
                   sets: sets, 
                   isCompleted: isCompleted,
-                  onCheckBoxChanged: (val) => ExerciseService().toggleExerciseCompleted(
-                    FirebaseAuth.instance.currentUser!.uid, 
-                    widget.workoutID, 
-                    docID,
-                    isCompleted
-                    ),
+                  onCheckBoxChanged: (val) => toggleExerciseCompleted(docID, exerciseName, isCompleted)
                 );
                 },
               );

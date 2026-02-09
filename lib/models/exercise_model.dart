@@ -7,7 +7,7 @@ class Exercise {
   final String reps;
   final String weight;
   final DateTime? timestamp;
-  bool isCompleted;
+  bool isCompleted = false;
 
   Exercise({
     required this.id,
