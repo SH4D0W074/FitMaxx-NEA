@@ -1,10 +1,13 @@
 import 'dart:async';
 
-import 'package:fitmaxx/consts.dart' as consts;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+
+import '../controllers/live_tracker_controller.dart';
+import '../services/map_services/activity_tracker_service.dart';
+import '../services/map_services/location_service_geolocator.dart';
+import '../models/map/activity_type.dart'; // contains TrackerActivityType
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -14,146 +17,176 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
 
-  Location _locationController = new Location();
-  StreamSubscription<LocationData>? _locationSub;
-  String GOOGLE_MAPS_API_KEY = consts.GOOGLE_MAPS_API_KEY;
-
-  final Completer<GoogleMapController> _mapController = 
-      Completer<GoogleMapController>();
-
-  static const LatLng _pGooglePlex = LatLng(37.4223, -122.0848);
-  static const LatLng _pApplePark = LatLng(37.3349, -122.0090);
-  LatLng? _currentP = null;
-
-  Map<PolylineId, Polyline> polylines = {};
+  late final LiveTrackerController tracker;
 
   @override
   void initState() {
     super.initState();
-    getLocationUpdates();
-  }
 
-  Future<void> getLocationUpdates() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
+    tracker = LiveTrackerController(
+      locationService: LocationServiceGeolocator(),
+      trackerService: ActivityTrackerService(),
+    );
 
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
-    } 
-    else {
-      return;
-    }
+    tracker.addListener(_onTrackerChanged);
 
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
-    }
-    if (_permissionGranted != PermissionStatus.granted) {
-      return;
-    }
-
-    
-    
-
-    _locationSub = _locationController.onLocationChanged.listen((LocationData currentLocation) {
-      final lat = currentLocation.latitude;
-      final lng = currentLocation.longitude;
-
-      if (lat != null && lng != null) {
-        if (!mounted) return; 
-        setState(() {
-          _currentP = LatLng(lat, lng);
-        _cameraToPosition(_currentP!);
-        });
-
-        getPolylinePoints().then((coordinates) {
-          generatePolylineFromPoints(coordinates);
-        });
-      }
+    // Get initial position so the map can show something
+    Future.microtask(() async {
+      try {
+        await tracker.initCurrentLocation();
+        if (!mounted) return;
+        setState(() {});
+      } catch (_) {}
     });
   }
 
-  Future<void> _cameraToPosition(LatLng pos) async {
-    final GoogleMapController controller = await _mapController.future;
-    CameraPosition _newCameraPosition = CameraPosition(target: pos, zoom: 13);
+  void _onTrackerChanged() async {
+    if (!mounted) return;
 
-    await controller.animateCamera(CameraUpdate.newCameraPosition(_newCameraPosition));
-  }
+    setState(() {});
 
-  Future<List<LatLng>> getPolylinePoints() async {
-    List<LatLng> polylineCoordinates = [];
-    PolylinePoints polylinePoints = PolylinePoints();
-    
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleApiKey: GOOGLE_MAPS_API_KEY,
-      request: PolylineRequest(
-        origin: PointLatLng(_pGooglePlex.latitude, _pGooglePlex.longitude),
-        destination: PointLatLng(_pApplePark.latitude, _pApplePark.longitude),
-        mode: TravelMode.walking,
-      ),
-    );
-    if (result.points.isNotEmpty) {
-      result.points.forEach((PointLatLng point) {
-        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-      });
+    // Optional: only auto-follow camera when recording
+    if (tracker.isRecording && tracker.currentLatLng != null && _mapController.isCompleted) {
+      final c = await _mapController.future;
+      await c.animateCamera(CameraUpdate.newLatLng(tracker.currentLatLng!));
     }
-    else {
-      print(result.errorMessage);
-    }
-    return polylineCoordinates;
-  }
-  
-  void generatePolylineFromPoints(List<LatLng> polylineCoordinates) async {
-    PolylineId id = PolylineId("poly");
-    Polyline polyline = Polyline(
-      polylineId: id,
-      color: Colors.black,
-      points: polylineCoordinates,
-      width: 8,
-    );
-    setState(() {
-      polylines[id] = polyline;
-    });
   }
 
   @override
   void dispose() {
-    _locationSub?.cancel();
+    tracker.removeListener(_onTrackerChanged);
+    tracker.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _currentP == null ? const Center(child: Text("Loading..."),) : 
-      GoogleMap(
-        onMapCreated: (GoogleMapController controller) {
-          _mapController.complete(controller);
-        },
-        initialCameraPosition: CameraPosition(
-          target: _pGooglePlex,
-          zoom: 13,
+    final user = FirebaseAuth.instance.currentUser;
+
+    final current = tracker.currentLatLng;
+    if (current == null) {
+      return const Scaffold(body: Center(child: Text("Loading...")));
+    }
+
+    final markers = <Marker>{
+      Marker(
+        markerId: const MarkerId("me"),
+        position: current,
+      ),
+    };
+
+    final polylines = <Polyline>{};
+    if (tracker.routePoints.length >= 2) {
+      polylines.add(
+        Polyline(
+          polylineId: const PolylineId("live"),
+          points: tracker.routePoints,
+          width: 6,
         ),
-        markers: {
-          Marker(
-            markerId: MarkerId("_currentLocation"), 
-            icon: BitmapDescriptor.defaultMarker, 
-            position: _currentP!
+      );
+    }
+
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: GoogleMap(
+              onMapCreated: (c) => _mapController.complete(c),
+              initialCameraPosition: CameraPosition(
+                target: current,
+                zoom: 16,
+              ),
+              markers: markers,
+              polylines: polylines,
+              myLocationButtonEnabled: true,
+              myLocationEnabled: false, // we are drawing our own marker
+            ),
           ),
-          Marker(
-            markerId: MarkerId("_sourceLocation"), 
-            icon: BitmapDescriptor.defaultMarker, 
-            position: _pGooglePlex
+
+          // Bottom control + stats panel
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(width: 0.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Activity type selector
+                Row(
+                  children: [
+                    const Text("Type: "),
+                    const SizedBox(width: 8),
+                    DropdownButton<TrackerActivityType>(
+                      value: tracker.activityType,
+                      items: TrackerActivityType.values
+                          .map((t) => DropdownMenuItem(
+                                value: t,
+                                child: Text(t.name),
+                              ))
+                          .toList(),
+                      onChanged: (t) {
+                        if (t != null) tracker.setActivityType(t);
+                      },
+                    ),
+                    const Spacer(),
+                    Text("${tracker.distanceKmText} km"),
+                  ],
+                ),
+
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Time: ${tracker.elapsedText}"),
+                    Text("Pace: ${tracker.paceText}"),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: (!tracker.isRecording && !tracker.isPaused && user != null)
+                          ? () => tracker.start(uid: user.uid)
+                          : null,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text("Start"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: (tracker.isRecording) ? () => tracker.pause(auto: false) : null,
+                      icon: const Icon(Icons.pause),
+                      label: const Text("Pause"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: (tracker.isPaused && user != null)
+                          ? () => tracker.resume(uid: user.uid)
+                          : null,
+                      icon: const Icon(Icons.play_circle),
+                      label: Text(tracker.isAutoPaused ? "Resume (auto)" : "Resume"),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: ((tracker.isRecording || tracker.isPaused) && user != null)
+                          ? () => tracker.stopAndSave(uid: user.uid)
+                          : null,
+                      icon: const Icon(Icons.stop),
+                      label: const Text("Stop + Save"),
+                    ),
+                    TextButton(
+                      onPressed: () => tracker.resetLocal(),
+                      child: const Text("Reset"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          Marker(
-            markerId: MarkerId("_destinationLocation"), 
-            icon: BitmapDescriptor.defaultMarker, 
-            position: _pApplePark
-          ),
-        },
-        polylines: Set<Polyline>.of(polylines.values),
+        ],
       ),
     );
   }
