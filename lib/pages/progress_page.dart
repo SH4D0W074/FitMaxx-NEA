@@ -24,7 +24,6 @@ class _ProgressPageState extends State<ProgressPage> {
   }
 
   int _toHeatLevel(int completedCount) {
-    // map any count into 1..5 buckets for your colorsets
     if (completedCount <= 0) return 0; // not included in dataset
     if (completedCount == 1) return 1;
     if (completedCount == 2) return 2;

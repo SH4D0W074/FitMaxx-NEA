@@ -1,4 +1,4 @@
-import 'package:fitmaxx/pages/gpsRecorder_tab.dart';
+import 'package:fitmaxx/pages/map_page.dart';
 import 'package:fitmaxx/pages/workoutLog_tab.dart';
 import 'package:flutter/material.dart';
 class WorkouthubPage extends StatelessWidget {
@@ -38,7 +38,7 @@ class WorkouthubPage extends StatelessWidget {
             WorkoutlogTab(),
 
             // GPS Recorder Tab
-            GpsrecorderTab(),
+            MapPage(),
           ],
         ),
       ),
