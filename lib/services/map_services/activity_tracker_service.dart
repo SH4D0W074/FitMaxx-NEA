@@ -43,6 +43,11 @@ class ActivityTrackerService {
     );
   }
 
+   // Delete activity document
+  Future<void> deleteActivity(String userId, String activityId) {
+    return _activityRef(userId, activityId).delete();
+  }
+
   // Add route point and update summary stats while tracking
   Future<void> addRoutePoint({
     required String uid,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitmaxx/components/my_activity_card.dart';
+import 'package:fitmaxx/components/my_delete_button.dart';
 import 'package:fitmaxx/controllers/live_tracker_controller.dart';
 import 'package:fitmaxx/models/map/tracked_activity_model.dart';
 import 'package:fitmaxx/services/map_services/activity_tracker_service.dart';
@@ -55,6 +56,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                               width: 5,
                             ),
                           };
+                    
                           return _buildMap(ActivityList[index], polylines);
                         } else if (polySnap.hasError) {
                           return Text("Error loading route.");
@@ -63,6 +65,8 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                         }
                       }
                     ), 
+                    deleteButton: _buildDeleteButton(ActivityList[index].id),
+
                   ),
                 );
               },
@@ -96,6 +100,14 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       polylines: polylines,
       myLocationButtonEnabled: true,
       myLocationEnabled: false, 
+    );
+  }
+  Widget _buildDeleteButton(String activityId) {
+    return MyDeleteButton(
+      onPressed: () async {
+        await ActivityTrackerService().deleteActivity(FirebaseAuth.instance.currentUser!.uid, activityId);
+        setState(() {}); // Refresh the list after deletion
+      },
     );
   }
 }

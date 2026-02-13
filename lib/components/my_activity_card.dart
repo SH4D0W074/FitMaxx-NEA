@@ -1,3 +1,4 @@
+import 'package:fitmaxx/components/my_delete_button.dart';
 import 'package:flutter/material.dart';
 import 'package:fitmaxx/models/map/tracked_activity_model.dart';
 
@@ -5,8 +6,9 @@ class MyActivityCard extends StatelessWidget {
 
   final TrackedActivity activity;
   final Widget childWidget;
+  final Widget deleteButton;
 
-  const MyActivityCard({super.key, required this.activity, required this.childWidget});
+  const MyActivityCard({super.key, required this.activity, required this.childWidget, required this.deleteButton});
 
   
   String getDay(DateTime dateTime) {
@@ -47,15 +49,32 @@ class MyActivityCard extends StatelessWidget {
         child: Column(
           children: [
            
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), 
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    activity.activityName.toString(),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                deleteButton,
+              ],
+            ),
+
             Padding(
-              padding: const EdgeInsets.all(4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
                         alignment: Alignment.centerLeft,
                         child: Text(
                           activity.type.name.toString().toUpperCase(),
@@ -68,7 +87,7 @@ class MyActivityCard extends StatelessWidget {
                         SizedBox(width: 10),
                       Container(
                         margin: EdgeInsets.symmetric(vertical: 4.0),
-                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                        padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
                         alignment: Alignment.centerLeft,
                         child: Text(
                           activity.endedAt != null ? getDay(activity.endedAt!) : 'No timestamp',
