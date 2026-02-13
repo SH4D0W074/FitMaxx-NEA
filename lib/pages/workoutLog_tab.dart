@@ -1,9 +1,5 @@
-
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:fitmaxx/components/my_delete_button.dart';
 import 'package:fitmaxx/components/my_edit_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';

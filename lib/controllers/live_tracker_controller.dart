@@ -12,8 +12,8 @@ import '../services/map_services/location_service_geolocator.dart';
 /// - Start / Pause / Resume / Stop
 /// - Live marker + polyline points
 /// - Distance + time
-/// - Auto-pause when still for N seconds
-/// - Writes route points every ~minMetersBetweenSavedPoints to Firestore
+/// - Auto-pause when still for 8 seconds
+/// - Writes route points every 5 seconds to Firestore
 
 class LiveTrackerController extends ChangeNotifier {
   LiveTrackerController({
@@ -35,7 +35,7 @@ class LiveTrackerController extends ChangeNotifier {
   final int autoPauseAfterStillSeconds;
   final double stillSpeedThresholdMps;
 
-  // ---- Public state ----
+  // ---- Public state and getters ----
   TrackerActivityType activityType = TrackerActivityType.running;
   LatLng? currentLatLng;
   final List<LatLng> routePoints = [];
@@ -56,7 +56,7 @@ class LiveTrackerController extends ChangeNotifier {
   double _lastSpeed = 0.0;
   int _stillSeconds = 0;
 
-  // ---- Simple UI helpers ----
+  // ---- UI helpers ----
   void setActivityType(TrackerActivityType type) {
     activityType = type;
     notifyListeners();

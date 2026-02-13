@@ -15,6 +15,7 @@ class MealdiaryPage extends StatefulWidget {
 class _MealdiaryPageState extends State<MealdiaryPage> {
 
   bool _showForm = false;
+  String? _editingFoodId; // null means creating new food, non-null means editing existing food
 
   final _formKey = GlobalKey<FormState>();
 
@@ -93,7 +94,54 @@ void _saveFood() async {
   _selectedMealType = 'Breakfast';
 }
 
-Widget _buildFoodForm() {
+void _updateFood(String docId) async {
+  if (!_formKey.currentState!.validate()) return;
+
+  final userService = UserService();
+  final CustomUser? user = await userService.getCurrentUser();
+
+  if (user == null) return;
+
+  final foodDocRef = FirebaseFirestore.instance
+      .collection('Users')
+      .doc(user.id)
+      .collection('consumedFoodLog')
+      ; 
+
+  // Build ConsumedFood with the Firestore document ID
+  final ConsumedFood newConsumedFood = ConsumedFood(
+    id: docId,
+    foodName: _nameController.text.trim(),
+    calories: double.parse(_calController.text).round(), 
+    protein: double.parse(_proteinController.text),
+    carbs: double.parse(_carbsController.text),
+    fat: double.parse(_fatController.text),
+    foodWeight: double.parse(_weightController.text),
+    mealType: _selectedMealType,
+    timestamp: DateTime.now(),
+  );
+
+  // Save to Firestore subcollection
+  await foodDocRef.doc(docId).update(newConsumedFood.toMap());
+
+  // Update UI
+  setState(() {
+    _showForm = false;
+    _editingFoodId = null;
+    _refreshKey++; // forces FutureBuilder / StreamBuilder refresh
+  });
+
+  // Clear form fields
+  _nameController.clear();
+  _calController.clear();
+  _proteinController.clear();
+  _carbsController.clear();
+  _fatController.clear();
+  _weightController.clear();
+  _selectedMealType = 'Breakfast';
+}
+
+Widget _buildFoodForm(String? existingFoodId) {
   return Center(
     child: Card(
       child: Padding(
@@ -192,7 +240,10 @@ Widget _buildFoodForm() {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        setState(() => _showForm = false);
+                        setState(() {
+                          _showForm = false;
+                          _editingFoodId = null;
+                        });
                         _nameController.clear();
                         _calController.clear();
                         _proteinController.clear();
@@ -206,6 +257,14 @@ Widget _buildFoodForm() {
                     ),
                   ),
                   const SizedBox(width: 10),
+                  if (existingFoodId != null)
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _updateFood(existingFoodId),
+                        child: const Text("Update"),
+                      ),
+                    )
+                  else
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _saveFood,
@@ -244,7 +303,7 @@ Widget _buildFoodForm() {
             duration: const Duration(milliseconds: 200),
             crossFadeState:
                 _showForm ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-            firstChild: _buildFoodForm(),
+            firstChild: _buildFoodForm(_editingFoodId), // pass null for new food
             secondChild: _buildFoodList(),
           ),
           Align(
@@ -435,6 +494,24 @@ Widget _buildFoodForm() {
                                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                                               ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () async {
+                                            setState(() {
+                                              _editingFoodId = food.id;
+                                              _showForm = true;
+
+                                              _nameController.text = food.foodName;
+                                              _calController.text = food.calories.toString();
+                                              _proteinController.text = food.protein.toString();
+                                              _carbsController.text = food.carbs.toString();
+                                              _fatController.text = food.fat.toString();
+                                              _weightController.text = food.foodWeight.toString();
+                                              _selectedMealType = food.mealType;
+                                            });
+                                            _buildFoodForm(food.id); // open form with existing food data
+                                          },
+                                          icon: const Icon(Icons.edit),
                                         ),
                                         IconButton(
                                           onPressed: () async {
