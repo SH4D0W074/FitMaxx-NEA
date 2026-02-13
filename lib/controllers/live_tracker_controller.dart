@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uuid/uuid.dart';
-
-import '../models/map/activity_type.dart'; // TrackerActivityType
+import '../models/map/activity_type.dart'; 
 import '../models/map/route_point_model.dart';
 import '../services/map_services/activity_tracker_service.dart';
 import '../services/map_services/location_service_geolocator.dart';
@@ -16,6 +14,7 @@ import '../services/map_services/location_service_geolocator.dart';
 /// - Distance + time
 /// - Auto-pause when still for N seconds
 /// - Writes route points every ~minMetersBetweenSavedPoints to Firestore
+
 class LiveTrackerController extends ChangeNotifier {
   LiveTrackerController({
     required this.locationService,
@@ -38,17 +37,13 @@ class LiveTrackerController extends ChangeNotifier {
 
   // ---- Public state ----
   TrackerActivityType activityType = TrackerActivityType.running;
-
   LatLng? currentLatLng;
   final List<LatLng> routePoints = [];
-
   bool isRecording = false;
   bool isPaused = false;
   bool isAutoPaused = false;
-
   double distanceMeters = 0.0;
   Duration elapsed = Duration.zero;
-
   String? activityId;
 
   // ---- Internals ----
@@ -62,8 +57,8 @@ class LiveTrackerController extends ChangeNotifier {
   int _stillSeconds = 0;
 
   // ---- Simple UI helpers ----
-  void setActivityType(TrackerActivityType t) {
-    activityType = t;
+  void setActivityType(TrackerActivityType type) {
+    activityType = type;
     notifyListeners();
   }
 
@@ -290,7 +285,7 @@ class LiveTrackerController extends ChangeNotifier {
     }
     _lastPoint = p;
 
-    // polyline (downsample slightly)
+    // polyline points (with jitter filter 2 meters)
     if (routePoints.isEmpty ||
         Geolocator.distanceBetween(
               routePoints.last.latitude,

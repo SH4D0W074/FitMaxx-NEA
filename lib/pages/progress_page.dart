@@ -37,18 +37,18 @@ class _ProgressPageState extends State<ProgressPage> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-        'P R O G R E S S',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        fontSize: 18,
-      ),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        elevation: 0,
-        centerTitle: true,
-      ),
+      // appBar: AppBar(
+      //   title: Text(
+      //   'P R O G R E S S',
+      //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      //   fontWeight: FontWeight.bold,
+      //   fontSize: 18,
+      // ),
+      //   ),
+      //   backgroundColor: Theme.of(context).colorScheme.primary,
+      //   elevation: 0,
+      //   centerTitle: true,
+      // ),
       body: Container(
         child: StreamBuilder(
           stream: HeatmapService().watchWorkoutDays(FirebaseAuth.instance.currentUser!.uid), 

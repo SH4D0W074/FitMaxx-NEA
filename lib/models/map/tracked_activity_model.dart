@@ -32,7 +32,7 @@ class TrackedActivity {
     this.endLng,
   });
 
-  Map<String, dynamic> toMapForCreate() {
+  Map<String, dynamic> toMap() {
     return {
       'type': activityTypeToString(type),
       'startedAt': FieldValue.serverTimestamp(),

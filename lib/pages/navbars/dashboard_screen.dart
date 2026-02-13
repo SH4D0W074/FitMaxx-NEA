@@ -1,6 +1,7 @@
-import 'package:fitmaxx/pages/activities_page.dart';
+import 'package:fitmaxx/pages/activities_overview_page.dart';
+import 'package:fitmaxx/pages/navbars/activities_and_progress_hub.dart';
 import 'package:fitmaxx/pages/progress_page.dart';
-import 'package:fitmaxx/pages/workoutHub_page.dart';
+import 'package:fitmaxx/pages/navbars/workoutHub_page.dart';
 import 'package:fitmaxx/pages/home_page.dart';
 import 'package:fitmaxx/pages/mealDiary_page.dart';
 import 'package:fitmaxx/pages/settings_page.dart';
@@ -24,7 +25,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     HomePage(),
     MealdiaryPage(),
     WorkouthubPage(),
-    ProgressPage(),
+    ActivitiesAndProgressHub(),
     SettingsPage(),
   ];
 
@@ -78,7 +79,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // progress page button
               GButton(
                 icon: Icons.sports_gymnastics,
-                text: "Progress",
+                text: "Stats",
                 ),
               
               // settings page button

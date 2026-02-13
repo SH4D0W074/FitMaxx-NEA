@@ -7,7 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../controllers/live_tracker_controller.dart';
 import '../services/map_services/activity_tracker_service.dart';
 import '../services/map_services/location_service_geolocator.dart';
-import '../models/map/activity_type.dart'; // contains TrackerActivityType
+import '../models/map/activity_type.dart'; 
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -47,7 +47,7 @@ class _MapPageState extends State<MapPage> {
 
     setState(() {});
 
-    // Optional: only auto-follow camera when recording
+    // only auto-follow camera when recording
     if (tracker.isRecording && tracker.currentLatLng != null && _mapController.isCompleted) {
       final c = await _mapController.future;
       await c.animateCamera(CameraUpdate.newLatLng(tracker.currentLatLng!));
@@ -101,11 +101,11 @@ class _MapPageState extends State<MapPage> {
               markers: markers,
               polylines: polylines,
               myLocationButtonEnabled: true,
-              myLocationEnabled: false, // we are drawing our own marker
+              myLocationEnabled: false, 
             ),
           ),
 
-          // Bottom control + stats panel
+          // Bottom control and stats panel
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(

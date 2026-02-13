@@ -37,7 +37,7 @@ class ActivityTrackerService {
     );
 
     await _activityRef(uid, activityId).set(
-      activity.toMapForCreate(),
+      activity.toMap(),
       SetOptions(merge: true),
     );
   }
