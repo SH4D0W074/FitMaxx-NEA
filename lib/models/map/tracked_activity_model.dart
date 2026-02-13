@@ -4,6 +4,7 @@ import 'activity_type.dart';
 class TrackedActivity {
   final String id;
   final TrackerActivityType type;
+  final String activityName;
 
   final DateTime? startedAt; 
   final DateTime? endedAt;
@@ -21,6 +22,7 @@ class TrackedActivity {
   TrackedActivity({
     required this.id,
     required this.type,
+    required this.activityName,
     required this.durationSeconds,
     required this.distanceMeters,
     required this.startLat,
@@ -34,6 +36,7 @@ class TrackedActivity {
 
   Map<String, dynamic> toMap() {
     return {
+      'activityName': activityName,
       'type': activityTypeToString(type),
       'startedAt': FieldValue.serverTimestamp(),
       'endedAt': null,
@@ -53,6 +56,7 @@ class TrackedActivity {
     return TrackedActivity(
       id: doc.id,
       type: activityTypeFromString((data['type'] ?? 'running') as String),
+      activityName: (data['activityName'] ?? 'Unnamed Activity') as String,
       startedAt: (data['startedAt'] as Timestamp?)?.toDate(),
       endedAt: (data['endedAt'] as Timestamp?)?.toDate(),
       durationSeconds: (data['durationSeconds'] ?? 0) as int,

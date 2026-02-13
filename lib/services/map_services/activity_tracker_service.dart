@@ -25,6 +25,7 @@ class ActivityTrackerService {
     final activity = TrackedActivity(
       id: activityId,
       type: type,
+      activityName: 'Unnamed Activity',
       durationSeconds: 0,
       distanceMeters: 0.0,
       startLat: startLat,
@@ -55,6 +56,19 @@ class ActivityTrackerService {
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
+
+  // update activity name 
+  Future<void> updateActivityName({
+    required String uid,
+    required String activityId,
+    required String activityName,
+    }) async {
+      await _activityRef(uid, activityId).set({
+        'activityName': activityName.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
   
   // Update distance/duration stats while tracking
   Future<void> updateLiveStats({

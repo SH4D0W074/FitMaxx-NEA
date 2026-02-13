@@ -37,12 +37,11 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               itemCount: ActivityList.length,
               itemBuilder: (context, index) {
                 final data = ActivityList[index].toMap();
-                final String activityType = data['type'] ?? 'Unknown';
-                final endTimestamp = data['endedAt'] != null ? Timestamp.now() : null;
 
                 return ListTile(
                   title: MyActivityCard(
                     activity: ActivityList[index],
+
                     childWidget: StreamBuilder(
                       stream: ActivityTrackerService().watchRoutePoints(FirebaseAuth.instance.currentUser!.uid, ActivityList[index].id), 
                       builder: (context, polySnap) {

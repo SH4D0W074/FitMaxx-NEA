@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -20,6 +21,47 @@ class _MapPageState extends State<MapPage> {
   final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
 
   late final LiveTrackerController tracker;
+  final TextEditingController _activityNameController = TextEditingController();
+
+  // name activity pop up dialog
+  void setNewName() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Name Activity"),
+        content: MyTextfield(hintText: "Enter activity name", obscureText: false, controller: _activityNameController),
+        actions: [
+          // cancel button
+          MaterialButton(
+            onPressed: cancel,
+            child: Text("Cancel"),
+          ),
+          // save name button
+          MaterialButton(
+            onPressed: saveName,
+            child: Text("Save"),
+          ),
+        ],
+      )
+    );
+    tracker.stopAndSave(uid: FirebaseAuth.instance.currentUser!.uid);
+  }
+  // save name
+  void saveName() {
+    ActivityTrackerService _service = ActivityTrackerService();
+    _service.updateActivityName(uid: FirebaseAuth.instance.currentUser!.uid, activityId:  tracker.activityId!, activityName: _activityNameController.text,);
+    Navigator.pop(context);
+    clearControllers();
+  }
+  // cancel 
+  void cancel() {
+    Navigator.pop(context);
+    clearControllers();
+  }
+  // clear controllers
+  void clearControllers() {
+    _activityNameController.clear();
+  }
 
   @override
   void initState() {
@@ -124,7 +166,7 @@ class _MapPageState extends State<MapPage> {
                       items: TrackerActivityType.values
                           .map((t) => DropdownMenuItem(
                                 value: t,
-                                child: Text(t.name),
+                                child: Text(t.name.toUpperCase()),
                               ))
                           .toList(),
                       onChanged: (t) {
@@ -172,7 +214,7 @@ class _MapPageState extends State<MapPage> {
                     ),
                     ElevatedButton.icon(
                       onPressed: ((tracker.isRecording || tracker.isPaused) && user != null)
-                          ? () => tracker.stopAndSave(uid: user.uid)
+                          ? () => setNewName()
                           : null,
                       icon: const Icon(Icons.stop),
                       label: const Text("Stop + Save"),
@@ -189,5 +231,7 @@ class _MapPageState extends State<MapPage> {
         ],
       ),
     );
+
+    
   }
 }
