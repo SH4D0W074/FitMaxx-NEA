@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/exercise_tile.dart';
+import 'package:fitmaxx/components/my_delete_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
 import 'package:fitmaxx/models/exercise_model.dart';
@@ -195,7 +196,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   reps: reps, 
                   sets: sets, 
                   isCompleted: isCompleted,
-                  onCheckBoxChanged: (val) => toggleExerciseCompleted(docID, exerciseName, isCompleted)
+                  onCheckBoxChanged: (val) => toggleExerciseCompleted(docID, exerciseName, isCompleted),
+                  widget: _buildDeleteButton(docID),
                 );
                 },
               );
@@ -207,6 +209,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
           )
         );
       },
+    );
+  }
+  Widget _buildDeleteButton(String exerciseId) {
+    return MyDeleteButton(
+      onPressed: () async {
+        await ExerciseService().deleteExercise(FirebaseAuth.instance.currentUser!.uid, widget.workoutID, exerciseId);
+        setState(() {}); // Refresh the list after deletion
+      },
+      color: Theme.of(context).colorScheme.inversePrimary,
     );
   }
 }

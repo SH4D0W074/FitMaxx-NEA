@@ -49,7 +49,10 @@ class _MapPageState extends State<MapPage> {
   // save name
   void saveName() {
     ActivityTrackerService _service = ActivityTrackerService();
-    _service.updateActivityName(uid: FirebaseAuth.instance.currentUser!.uid, activityId:  tracker.activityId!, activityName: _activityNameController.text,);
+
+    String finalName = _activityNameController.text.trim().isNotEmpty ? _activityNameController.text : "Unnamed Activity";
+
+    _service.updateActivityName(uid: FirebaseAuth.instance.currentUser!.uid, activityId:  tracker.activityId!, activityName: finalName,);
     Navigator.pop(context);
     clearControllers();
   }

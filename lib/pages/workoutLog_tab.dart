@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:fitmaxx/components/my_delete_button.dart';
+import 'package:fitmaxx/components/my_edit_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
 import 'package:fitmaxx/models/user_model.dart';
@@ -39,10 +41,32 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
             onPressed: cancel,
             child: Text("Cancel"),
           ),
-          // save new workout button
+          // save new workout button 
           MaterialButton(
             onPressed: saveWorkout,
             child: Text("Save"),
+          )
+        ],
+      )
+    );
+  }
+
+  void updateDialog(String docId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Edit workout"),
+        content: MyTextfield(hintText: "Enter workout name", obscureText: false, controller: newWorkoutNameController),
+        actions: [
+          // cancel button
+          MaterialButton(
+            onPressed: cancel,
+            child: Text("Cancel"),
+          ),
+          // save updated workout button
+          MaterialButton(
+            onPressed: () => updateWorkout(docId),
+            child: Text("Update"),
           ),
         ],
       )
@@ -79,6 +103,23 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
     // Save to Firestore subcollection
     await workoutService.addWorkout(user.id, newWorkout);
 
+    // pop dialog
+    Navigator.pop(context);
+    clearControllers();
+  }
+   // update workout
+  void updateWorkout(String docId) async {
+
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+    final WorkoutService workoutService = WorkoutService();
+
+    if (user == null) return;
+      // get new workout name from text controller
+      String newWorkoutName = newWorkoutNameController.text;
+    
+    // Save to Firestore subcollection
+    await workoutService.updateWorkout(user.id, docId,newWorkoutName);
     // pop dialog
     Navigator.pop(context);
     clearControllers();
@@ -146,9 +187,25 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
                       elevation: 1,
                       child: ListTile(
                         title: Text(workoutName),
-                        trailing: IconButton(
-                          icon: Icon(Icons.edit), 
-                          onPressed: () => goToWorkoutPage(workoutName, docID),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: _buildDeleteButton(docID),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: _buildEditButton(docID),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: IconButton(
+                                icon: Icon(Icons.arrow_forward_ios), 
+                                onPressed: () => goToWorkoutPage(workoutName, docID),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -166,5 +223,21 @@ class _WorkoutlogTabState extends State<WorkoutlogTab> {
         ),
       )
     );
+  }
+   Widget _buildDeleteButton(String workoutId) {
+    return MyDeleteButton(
+      onPressed: () async {
+        await WorkoutService().deleteWorkout(FirebaseAuth.instance.currentUser!.uid, workoutId);
+        setState(() {}); // Refresh the list after deletion
+      },
+      color: Theme.of(context).colorScheme.inversePrimary,
+    );
+  }
+
+  Widget _buildEditButton(String workoutId) {
+    return MyEditButton(
+      onPressed: () => updateDialog(workoutId),
+      color: Theme.of(context).colorScheme.inversePrimary,
+     );
   }
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class MyDeleteButton extends StatelessWidget {
+class MyEditButton extends StatelessWidget {
   final Function() onPressed;
   final Color? color;
 
-  const MyDeleteButton({
+  const MyEditButton({
     super.key,
     required this.onPressed,
     this.color,
@@ -14,7 +14,7 @@ class MyDeleteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: onPressed,
-      icon: const Icon(Icons.delete),
+      icon: const Icon(Icons.edit),
       color: color ?? Theme.of(context).colorScheme.secondary,
       tooltip: "Delete",
     );

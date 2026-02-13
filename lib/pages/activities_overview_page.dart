@@ -108,6 +108,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         await ActivityTrackerService().deleteActivity(FirebaseAuth.instance.currentUser!.uid, activityId);
         setState(() {}); // Refresh the list after deletion
       },
+      color: Theme.of(context).colorScheme.inversePrimary,
     );
   }
 }

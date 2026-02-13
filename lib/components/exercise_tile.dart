@@ -7,6 +7,7 @@ class ExerciseTile extends StatelessWidget {
   final String sets;
   final bool isCompleted;
   final void Function(bool?)? onCheckBoxChanged;
+  final Widget? widget;
 
   const ExerciseTile({super.key, 
     required this.exerciseName,
@@ -15,6 +16,7 @@ class ExerciseTile extends StatelessWidget {
     required this.sets,
     required this.isCompleted,
     required this.onCheckBoxChanged,
+    required this.widget,
   });
 
   @override
@@ -51,9 +53,15 @@ class ExerciseTile extends StatelessWidget {
                 ),
               ],
             ),
-            trailing:Checkbox(
-              value: isCompleted,
-              onChanged: (value) => onCheckBoxChanged!(value),
+            trailing:Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                widget!,
+                Checkbox(
+                  value: isCompleted,
+                  onChanged: (value) => onCheckBoxChanged!(value),
+                ),
+              ],
             ),
         )
       ),
