@@ -29,26 +29,31 @@ class ExerciseTile extends StatelessWidget {
           title: Text(
             exerciseName
             ),
-            subtitle: Row(
+            subtitle: Wrap(
+              spacing: 0,
+              runSpacing: 0.0,
               children: [
                 // weight
                 Chip(
                   label: Text(
-                    "${weight}kg"
+                    "${weight}kg",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
         
                 // reps
                 Chip(
                   label: Text(
-                    "${reps.toString()} reps"
+                    "${reps.toString()} reps",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
                 
                 // sets
                 Chip(
                   label: Text(
-                    "${sets.toString()} sets"
+                    "${sets.toString()} sets",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
               ],

@@ -41,9 +41,7 @@ class ExerciseService {
   Future<void> updateExercise(String userID, String workoutID, String exerciseID, Exercise newExercise) {
     final CollectionReference<Map<String, dynamic>> exercises = exerciseLogRef(userID, workoutID);
     return exercises.doc(exerciseID).update(
-      {
-        newExercise.toMap()
-      } as Map<Object, Object?>
+      newExercise.toMap()
     );
   }
 
