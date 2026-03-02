@@ -7,6 +7,21 @@ class HeatmapService {
     return _db.collection('Users').doc(uid).collection('dailyWorkouts').doc(dateKey);
   }
 
+  Future<String> getWeightData(String uid, String workoutId, String exerciseId) async {
+  
+    final exerciseRef = _db.collection('Users').doc(uid).collection('workoutLog').doc(workoutId).collection('exercises').doc(exerciseId);
+    String totalWeight = '0';
+  
+    final docSnapshot = await exerciseRef.get();
+    if (docSnapshot.exists) {
+      
+      Map<String, dynamic>? data = docSnapshot.data();
+      
+      totalWeight = data?['weight'] ?? "0"; 
+    }
+    return totalWeight;
+  }
+
   Future<void> markExerciseComplete({required String uid, required String dateKey, required String workoutId, required String exerciseId, required String exerciseName,}) async {
     // Get reference to the day's document and the specific exercise completion document
     final dayRef = _dayRef(uid, dateKey);
@@ -18,6 +33,7 @@ class HeatmapService {
 
     await dayRef.set({
       'completedCount': FieldValue.increment(1),
+      'totalWeight': FieldValue.increment((int.parse(await getWeightData(uid, workoutId, exerciseId))) ), 
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
@@ -28,7 +44,7 @@ class HeatmapService {
     });
   }
 
-  Future<void> unmarkExerciseComplete({required String uid, required String dateKey, required String exerciseId,}) async {
+  Future<void> unmarkExerciseComplete({required String uid, required String dateKey, required String workoutId, required String exerciseId,}) async {
     final dayRef = _dayRef(uid, dateKey);
     final completionRef = dayRef.collection('completedExercises').doc(exerciseId);
 
@@ -39,6 +55,7 @@ class HeatmapService {
 
     await dayRef.set({
       'completedCount': FieldValue.increment(-1),
+      'totalWeight': FieldValue.increment(-(int.parse(await getWeightData(uid, workoutId, exerciseId))) ), 
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

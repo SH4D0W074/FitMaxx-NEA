@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<UserCredential> registerWithEmailPassword({required String email, required String password}) async {
     // try creating the user
@@ -31,6 +34,15 @@ class AuthService {
 
   // sign out user
   Future<void> signOut() => _auth.signOut();
+
+  // delete user account
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
+    await _db.collection('Users').doc(uid).delete();
+    await user.delete();
+  }
 
   // map FirebaseAuthException codes to user-friendly messages
   String _mapAuthError(FirebaseAuthException e) {

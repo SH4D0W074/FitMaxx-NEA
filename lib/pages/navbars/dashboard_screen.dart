@@ -4,7 +4,7 @@ import 'package:fitmaxx/pages/progress_page.dart';
 import 'package:fitmaxx/pages/navbars/workoutHub_page.dart';
 import 'package:fitmaxx/pages/home_page.dart';
 import 'package:fitmaxx/pages/mealDiary_page.dart';
-import 'package:fitmaxx/pages/settings_page.dart';
+import 'package:fitmaxx/pages/userSettings/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 

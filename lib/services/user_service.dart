@@ -89,4 +89,30 @@ class UserService {
           a.month == b.month &&
           a.day == b.day;
   }
+
+  Future<void> updateUserProfile({
+    required String userId,
+    String? username,
+    int? height,
+    int? age,
+    double? weight,
+  }) async {
+      final data = <String, dynamic>{};
+
+      if (username != null) data['username'] = username;
+      if (height != null) data['height'] = height;
+      if (age != null) data['age'] = age;
+      if (weight != null) data['weight'] = weight;
+
+      data['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _firestore.collection('Users').doc(userId).update(data);
+  }
+
+  Future<void> updateTargetCalories(String userId,int newTargetCalories) async {
+    await _firestore.collection('Users').doc(userId).update({
+      'targetCalories': newTargetCalories,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

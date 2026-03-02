@@ -45,6 +45,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       heatmapService.unmarkExerciseComplete(
         uid: user.id, 
         dateKey: DateTime.now().toIso8601String().substring(0, 10), 
+        workoutId: widget.workoutID,
         exerciseId: exerciseID, 
       );
       exerciseService.toggleExerciseCompleted(user.id, widget.workoutID, exerciseID, currentStatus);
