@@ -1,1 +1,3 @@
-const String GOOGLE_MAPS_API_KEY = "AIzaSyA7HG11Fewhowz-sUmXhEaXMnL7oyw5AZ0";
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String GOOGLE_MAPS_API_KEY = dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';

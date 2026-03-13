@@ -49,5 +49,7 @@
 	<key>Want to display location to map and track it.</key>
 	<string>NSLocationAlwaysAndWhenInUseUsageDescription</string>
 	<key>Want to display location to map and track it.</key>
+	<key>GoogleMapsApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 </dict>
 </plist>

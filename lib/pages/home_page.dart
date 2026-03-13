@@ -1,12 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:fitmaxx/components/my_roundbutton.dart';
 import 'package:fitmaxx/components/nutrient_row.dart';
-import 'package:fitmaxx/models/consumed_food_model.dart';
 import 'package:fitmaxx/models/macro_totals.dart';
 import 'package:fitmaxx/models/user_model.dart';
 import 'package:fitmaxx/services/user_service.dart';
-import 'package:fitmaxx/theme/dark_mode.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:fitmaxx/components/line_chart.dart';
