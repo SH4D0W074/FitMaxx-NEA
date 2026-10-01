@@ -7,6 +7,7 @@ class ExerciseTile extends StatelessWidget {
   final String sets;
   final bool isCompleted;
   final void Function(bool?)? onCheckBoxChanged;
+  final Widget? widget;
 
   const ExerciseTile({super.key, 
     required this.exerciseName,
@@ -15,6 +16,7 @@ class ExerciseTile extends StatelessWidget {
     required this.sets,
     required this.isCompleted,
     required this.onCheckBoxChanged,
+    required this.widget,
   });
 
   @override
@@ -27,33 +29,44 @@ class ExerciseTile extends StatelessWidget {
           title: Text(
             exerciseName
             ),
-            subtitle: Row(
+            subtitle: Wrap(
+              spacing: 0,
+              runSpacing: 0.0,
               children: [
                 // weight
                 Chip(
                   label: Text(
-                    "${weight}kg"
+                    "${weight}kg",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
         
                 // reps
                 Chip(
                   label: Text(
-                    "${reps.toString()} reps"
+                    "${reps.toString()} reps",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
                 
                 // sets
                 Chip(
                   label: Text(
-                    "${sets.toString()} sets"
+                    "${sets.toString()} sets",
+                    overflow: TextOverflow.ellipsis,
                   )
                 ),
               ],
             ),
-            trailing:Checkbox(
-              value: isCompleted, 
-              onChanged: (value) => onCheckBoxChanged!(value),
+            trailing:Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                widget!,
+                Checkbox(
+                  value: isCompleted,
+                  onChanged: (value) => onCheckBoxChanged!(value),
+                ),
+              ],
             ),
         )
       ),

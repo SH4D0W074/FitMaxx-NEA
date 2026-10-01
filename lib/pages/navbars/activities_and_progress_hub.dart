@@ -1,12 +1,12 @@
-import 'package:fitmaxx/pages/gpsRecorder_tab.dart';
-import 'package:fitmaxx/pages/workoutLog_tab.dart';
+import 'package:fitmaxx/pages/progress_page.dart';
+import 'package:fitmaxx/pages/activities_overview_page.dart';
 import 'package:flutter/material.dart';
-class WorkouthubPage extends StatelessWidget {
-  const WorkouthubPage({super.key});
+class ActivitiesAndProgressHub extends StatelessWidget {
+  const ActivitiesAndProgressHub({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // default tab controller for workout log and gps recorder tabs
+    // default tab controller for progress and activities tabs
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -22,10 +22,10 @@ class WorkouthubPage extends StatelessWidget {
             labelColor: Theme.of(context).colorScheme.inversePrimary,
             unselectedLabelColor: Theme.of(context).colorScheme.secondary,
             labelPadding: const EdgeInsets.symmetric(horizontal: 24),
-            // tabs for workout log and gps recorder
+            // tabs for progress page and activities overview page
             tabs: [
-              Tab(icon: Icon(Icons.fitness_center), text: 'W O R K O U T'),
-              Tab(icon: Icon(Icons.map), text: 'G P S'),
+              Tab(icon: Icon(Icons.bar_chart), text: 'P R O G R E S S'),
+              Tab(icon: Icon(Icons.event_note), text: 'A C T I V I T I E S'),
             ],
           ),
         ),
@@ -34,11 +34,11 @@ class WorkouthubPage extends StatelessWidget {
         body: const TabBarView(
           physics: NeverScrollableScrollPhysics(),
           children: [
-            // Workout Log Tab
-            WorkoutlogTab(),
+            // Progress Tab
+            ProgressPage(),
 
-            // GPS Recorder Tab
-            GpsrecorderTab(),
+            // Activities overviewq Tab
+            ActivitiesPage(),
           ],
         ),
       ),

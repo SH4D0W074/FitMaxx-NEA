@@ -1,12 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitmaxx/components/exercise_tile.dart';
+import 'package:fitmaxx/components/my_delete_button.dart';
+import 'package:fitmaxx/components/my_edit_button.dart';
 import 'package:fitmaxx/components/my_textfield.dart';
 import 'package:fitmaxx/data/workout_data.dart';
+import 'package:fitmaxx/models/exercise_model.dart';
+import 'package:fitmaxx/models/user_model.dart';
+import 'package:fitmaxx/models/workout_model.dart';
+import 'package:fitmaxx/services/exercise_service.dart';
+import 'package:fitmaxx/services/heatmap_service.dart';
+import 'package:fitmaxx/services/user_service.dart';
+import 'package:fitmaxx/services/workout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class WorkoutPage extends StatefulWidget {
   final String workoutName;
-  const WorkoutPage({super.key, required this.workoutName});
+  final String workoutID;
+  const WorkoutPage({super.key, required this.workoutName, required this.workoutID});
 
   @override
   State<WorkoutPage> createState() => _WorkoutPageState();
@@ -21,26 +33,66 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final exerciseSetsController = TextEditingController();
 
 
-  // checkbox was tapped
-  void onCheckBoxChanged(String workoutName, String exerciseName){
-    Provider.of<WorkoutData>(context, listen: false).checkOffExercise(workoutName, exerciseName);
+  // check if exercise is completed and update heatmap
+  void toggleExerciseCompleted(String exerciseID, String exerciseName, bool currentStatus) async {
+    final userService = UserService();
+    final ExerciseService exerciseService = ExerciseService();
+    final HeatmapService heatmapService = HeatmapService();
+    final CustomUser? user = await userService.getCurrentUser();
+    if (user == null) return;
+
+    if (currentStatus==true) {
+      heatmapService.unmarkExerciseComplete(
+        uid: user.id, 
+        dateKey: DateTime.now().toIso8601String().substring(0, 10), 
+        workoutId: widget.workoutID,
+        exerciseId: exerciseID, 
+      );
+      exerciseService.toggleExerciseCompleted(user.id, widget.workoutID, exerciseID, currentStatus);
+    }
+    else{
+      heatmapService.markExerciseComplete(
+        uid: user.id, 
+        dateKey: DateTime.now().toIso8601String().substring(0, 10), 
+        workoutId: widget.workoutID, 
+        exerciseId: exerciseID, 
+        exerciseName: exerciseName,
+      );
+      exerciseService.toggleExerciseCompleted(user.id, widget.workoutID, exerciseID, currentStatus);
+    }
+
   }
 
     // save exercise
-  void saveExercise() {
-    // get exercise name from text controller
+  void saveExercise() async {
+    // get exercise name and fields from text controller
     String newExerciseName = exerciseNameController.text;
     String reps = (exerciseRepsController.text);
     String sets = (exerciseSetsController.text);
     String weight = exerciseWeightController.text;
-    // add exercise to workout 
-    Provider.of<WorkoutData>(context, listen: false).addExercise(
-      widget.workoutName, 
-      newExerciseName, 
-      weight, 
-      reps, 
-      sets
+    
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+    final ExerciseService exerciseService = ExerciseService();
+
+    if (user == null) return;
+
+    // Create a new document reference in the subcollection
+    final exerciseDocRef = exerciseService.exerciseLogRef(user.id, widget.workoutID).doc();
+
+    // Build exercise with the Firestore document ID
+    final Exercise newExercise = Exercise(
+      id: exerciseDocRef.id,
+      name: newExerciseName,
+      sets: sets,
+      reps: reps,
+      weight: weight,
+      timestamp: DateTime.now(),
     );
+
+    // Save to Firestore subcollection
+    await exerciseService.addExercise(user.id, widget.workoutID, newExercise);
+    
     // pop dialog
     Navigator.pop(context);
     clearControllers();
@@ -98,6 +150,79 @@ class _WorkoutPageState extends State<WorkoutPage> {
     );
   }
 
+  // update exercise
+  void updateExercise(String docId) async {
+
+    final userService = UserService();
+    final CustomUser? user = await userService.getCurrentUser();
+    final ExerciseService exerciseService = ExerciseService();
+
+    if (user == null) return;
+      // get exercise name and fields from text controller
+      String newExerciseName = exerciseNameController.text;
+      String reps = (exerciseRepsController.text);
+      String sets = (exerciseSetsController.text);
+      String weight = exerciseWeightController.text;
+    
+    // Save to Firestore subcollection
+    await exerciseService.updateExercise(user.id, widget.workoutID, docId, Exercise(
+      id: docId,
+      name: newExerciseName,
+      sets: sets,
+      reps: reps,
+      weight: weight,
+      timestamp: DateTime.now(),
+    ));
+    // pop dialog
+    Navigator.pop(context);
+    clearControllers();
+  }
+
+  // create update dialog
+  void updateDialog(Exercise? exercise) {
+    // if exercise is not null, prefill text controllers with current exercise data{
+    if (exercise != null) {
+      exerciseNameController.text = exercise.name;
+      exerciseWeightController.text = exercise.weight;
+      exerciseRepsController.text = exercise.reps;
+      exerciseSetsController.text = exercise.sets;
+    }
+    showDialog(
+      context: context, 
+      builder: (context) =>  AlertDialog(
+        title: Text("Update exercise"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // exercise name
+            MyTextfield(hintText: "Exercise name", obscureText: false, controller: exerciseNameController,),
+            SizedBox(height: 5.0,),
+            // weight
+            MyTextfield(hintText: "Weight", obscureText: false, controller: exerciseWeightController),
+            SizedBox(height: 5.0,),
+            // reps
+            MyTextfield(hintText: "Reps", obscureText: false, controller: exerciseRepsController),
+            SizedBox(height: 5.0,),
+            // sets
+            MyTextfield(hintText: "Sets", obscureText: false, controller: exerciseSetsController),
+          ],
+        ),
+        actions: [
+          // cancel button
+          MaterialButton(
+            onPressed: cancel,
+            child: Text("Cancel"),
+          ),
+          // update exercise button
+          MaterialButton(
+            onPressed: () => updateExercise(exercise!.id),
+            child: Text("Update"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<WorkoutData>(
@@ -112,19 +237,84 @@ class _WorkoutPageState extends State<WorkoutPage> {
             child: Icon(Icons.add),
             onPressed: createNewExercise,
           ),
-          body: ListView.builder(
-            itemCount: workoutData.numberOfExercisesInWorkout(widget.workoutName),
-            itemBuilder: (context, index) => ExerciseTile(
-              exerciseName: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name, 
-              weight: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].weight, 
-              reps: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].reps, 
-              sets: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].sets, 
-              isCompleted: workoutData.getRelevantWorkout(widget.workoutName).exercises[index].isCompleted,
-              onCheckBoxChanged: (val) => onCheckBoxChanged(widget.workoutName, workoutData.getRelevantWorkout(widget.workoutName).exercises[index].name),
-            ),
+          body: StreamBuilder(
+            stream: ExerciseService().getExercisesStream(
+              FirebaseAuth.instance.currentUser!.uid, 
+              widget.workoutID
+              ),
+            builder: (context, snapshot) {
+
+              // if we have data, get all docs
+              if (snapshot.hasData) {
+              List exerciseList = snapshot.data!.docs;
+
+
+              return ListView.builder(
+                itemCount: exerciseList.length,
+                itemBuilder: (context, index) {
+
+                  DocumentSnapshot document = exerciseList[index];
+                  // get individual doc
+                  String docID = document.id;
+                  // get exercise from each doc
+                  Map<String, dynamic> data = 
+                    document.data() as Map<String, dynamic>;
+                  String exerciseName = data['name'];
+                  String weight = data['weight'];
+                  String reps = data['reps'];
+                  String sets = data['sets'];
+                  bool isCompleted = data['isCompleted'];
+
+                  return ExerciseTile(
+                  exerciseName: exerciseName, 
+                  weight: weight, 
+                  reps: reps, 
+                  sets: sets, 
+                  isCompleted: isCompleted,
+                  onCheckBoxChanged: (val) => toggleExerciseCompleted(docID, exerciseName, isCompleted),
+                  widget: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildDeleteButton(docID),
+                      
+                      _buildEditButton(Exercise(
+                        id: docID,
+                        name: exerciseName,
+                        weight: weight,
+                        reps: reps,
+                        sets: sets,
+                        isCompleted: isCompleted,
+                        timestamp: DateTime.now(),
+                      )),
+                    ],
+                  ),
+                );
+                },
+              );
+            }
+              else {
+              return const Text('No exercises..');
+              }
+            }
           )
         );
       },
     );
+  }
+  Widget _buildDeleteButton(String exerciseId) {
+    return MyDeleteButton(
+      onPressed: () async {
+        await ExerciseService().deleteExercise(FirebaseAuth.instance.currentUser!.uid, widget.workoutID, exerciseId);
+        setState(() {}); // Refresh the list after deletion
+      },
+      color: Theme.of(context).colorScheme.inversePrimary,
+    );
+  }
+
+   Widget _buildEditButton(Exercise exercise) {
+    return MyEditButton(
+      onPressed: () => updateDialog(exercise),
+      color: Theme.of(context).colorScheme.inversePrimary,
+     );
   }
 }
